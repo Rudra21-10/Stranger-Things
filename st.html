@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stranger Things Lights Wall</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --led-size: 60px;
+      --led-gap: 12px;
+      --led-off: #1a1a1a;
+    }
+    body {
+      background: url('https://external-preview.redd.it/happy-stranger-things-day-i-made-some-byers-house-zoom-v0-amV4ZTh6ZnNnYnpkMUA3t8DviGouNId1gd9q3MgJ1kyHpA4dR9KLn100Dfrk.png?format=pjpg&auto=webp&s=a8e316591146241d22de10879a4b803c5b9869e0') no-repeat center center fixed;
+      background-size: cover;
+      color: #eee;
+      text-align: center;
+      padding-top: 60px;
+      font-family: 'Courier New', monospace;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(2px);
+      z-index: 0;
+    }
+    .logo {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 40px;
+    }
+    .logo img {
+      max-width: 300px;
+      width: 60%;
+      filter: drop-shadow(0 0 12px #ff0000);
+      animation: flicker 2s infinite;
+    }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
+    .led-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(13, auto);
+      gap: var(--led-gap);
+      justify-content: center;
+    }
+    .led {
+      width: var(--led-size);
+      height: var(--led-size);
+      border-radius: 50%;
+      background: var(--led-off);
+      transition: all 0.25s ease;
+      position: relative;
+      box-shadow: 0 0 10px rgba(0,0,0,0.8);
+    }
+    .label {
+      position: absolute;
+      bottom: 4px;
+      font-size: 12px;
+      color: #999;
+    }
+    .on {
+      box-shadow: 0 0 35px currentColor;
+      transform: scale(1.1);
+    }
+    @media (max-width:640px){
+      :root { --led-size: 45px; }
+      .led-grid { grid-template-columns: repeat(7, auto); }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png" alt="Stranger Things Logo" />
+  </div>
+  <div id="ledGrid" class="led-grid"></div>
+
+  <script>
+    const AUTO_MESSAGE = 'Vidhi Hii'; // Change message here
+
+    const ledGrid = document.getElementById('ledGrid');
+    const A_CHAR_CODE = 'A'.charCodeAt(0);
+    const leds = [];
+
+    // Create 26 LEDs labeled A-Z
+    for(let i=0;i<26;i++){
+      const div=document.createElement('div');
+      div.className='led';
+      const label=document.createElement('div');
+      label.className='label';
+      label.textContent=String.fromCharCode(A_CHAR_CODE+i);
+      div.appendChild(label);
+      ledGrid.appendChild(div);
+      leds.push(div);
+    }
+
+    function sanitize(msg){
+      return (msg||'').toUpperCase().split('').filter(c=>/[A-Z ]/.test(c));
+    }
+
+    const seq=sanitize(AUTO_MESSAGE).map(c=>c===' '?{type:'space'}:{type:'letter',index:c.charCodeAt(0)-A_CHAR_CODE});
+
+    function randomColor(){
+      const hue = Math.floor(Math.random()*360);
+      return `hsl(${hue},100%,60%)`;
+    }
+
+    function blinkLetter(idx){
+      const el=leds[idx];
+      const color=randomColor();
+      el.style.color=color;
+      el.style.background=color;
+      el.classList.add('on');
+      setTimeout(()=>{
+        el.classList.remove('on');
+        el.style.background='var(--led-off)';
+      },350);
+    }
+
+    let i=0;
+    function loop(){
+      const e=seq[i++];
+      if(!e)return setTimeout(()=>{i=0;loop();},600);
+      if(e.type==='space')return setTimeout(loop,400);
+      blinkLetter(e.index);
+      if(i>=seq.length)setTimeout(()=>{i=0;},800);
+      setTimeout(loop,450);
+    }
+
+    // Intro flicker then start loop
+    setTimeout(()=>{
+      leds.forEach((l,k)=>setTimeout(()=>{l.style.background=randomColor();},k*40));
+      setTimeout(()=>leds.forEach(l=>l.style.background='var(--led-off)'),1300);
+      setTimeout(loop,1600);
+    },300);
+  </script>
+</body>
+</html>
